@@ -10,7 +10,7 @@ import java.util.List;
  * Created by excadmin on 2017/07/11.
  */
 
-public class MovieUseCaseImpl extends UseCase<String> implements MovieUseCase,MovieRepository.MovieRepositoryCallback {
+public class MovieUseCaseImpl extends UseCase<Long> implements MovieUseCase,MovieRepository.MovieRepositoryCallback {
 
     private static MovieUseCaseImpl sUseCase;
     private final MovieRepository mMovieRepository;
@@ -30,9 +30,9 @@ public class MovieUseCaseImpl extends UseCase<String> implements MovieUseCase,Mo
     }
 
     @Override
-    public void execute(String movieId, MovieUseCaseCallback callback) {
+    public void execute(long movieId, MovieUseCaseCallback callback) {
         mCallback = callback;
-        this.start(null);
+        this.start(movieId);
     }
 
     @Override
@@ -75,7 +75,7 @@ public class MovieUseCaseImpl extends UseCase<String> implements MovieUseCase,Mo
     }
 
     @Override
-    protected void call(String params) {
-        mMovieRepository.getMovie(params);
+    protected void call(Long params) {
+        mMovieRepository.getMovie(params,this);
     }
 }

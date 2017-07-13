@@ -42,10 +42,16 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.resource.drawable.GlideDrawable;
 import com.bumptech.glide.request.animation.GlideAnimation;
 import com.bumptech.glide.request.target.SimpleTarget;
+import com.example.excadmin.tvcleanarchitecture.data.repository.MovieRepositoryImpl;
+import com.example.excadmin.tvcleanarchitecture.domain.executor.UIThread;
 import com.example.excadmin.tvcleanarchitecture.domain.model.Movie;
 import com.example.excadmin.tvcleanarchitecture.MovieList;
 import com.example.excadmin.tvcleanarchitecture.R;
 import com.example.excadmin.tvcleanarchitecture.Utils;
+import com.example.excadmin.tvcleanarchitecture.domain.repository.MovieRepository;
+import com.example.excadmin.tvcleanarchitecture.domain.usecase.MovieUseCase;
+import com.example.excadmin.tvcleanarchitecture.domain.usecase.MovieUseCaseImpl;
+import com.example.excadmin.tvcleanarchitecture.presentation.presenter.MovieDetailPresenter;
 import com.example.excadmin.tvcleanarchitecture.presentation.ui.activity.DetailsActivity;
 import com.example.excadmin.tvcleanarchitecture.presentation.ui.activity.MainActivity;
 import com.example.excadmin.tvcleanarchitecture.presentation.ui.activity.PlaybackOverlayActivity;
@@ -59,7 +65,7 @@ import java.util.List;
  * LeanbackDetailsFragment extends DetailsFragment, a Wrapper fragment for leanback details screens.
  * It shows a detailed view of video and its meta plus related videos.
  */
-public class VideoDetailsFragment extends DetailsFragment {
+public class VideoDetailsFragment extends DetailsFragment implements MovieDetailPresenter.ShowMovieView {
     private static final String TAG = "VideoDetailsFragment";
 
     private static final int ACTION_WATCH_TRAILER = 1;
@@ -71,8 +77,6 @@ public class VideoDetailsFragment extends DetailsFragment {
 
     private static final int NUM_COLS = 10;
 
-    private Movie mSelectedMovie;
-
     private ArrayObjectAdapter mAdapter;
     private ClassPresenterSelector mPresenterSelector;
 
@@ -80,27 +84,27 @@ public class VideoDetailsFragment extends DetailsFragment {
     private Drawable mDefaultBackground;
     private DisplayMetrics mMetrics;
 
+    private Movie mSelectedMovie;
+    MovieDetailPresenter mMovieDetailPresenter;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         Log.d(TAG, "onCreate DetailsFragment");
         super.onCreate(savedInstanceState);
-
         prepareBackgroundManager();
+        mSelectedMovie = (Movie) getActivity().getIntent().getSerializableExtra(DetailsActivity.MOVIE);
+        initialize();
+    }
 
-        mSelectedMovie = (Movie) getActivity().getIntent()
-                .getSerializableExtra(DetailsActivity.MOVIE);
-        if (mSelectedMovie != null) {
-            setupAdapter();
-            setupDetailsOverviewRow();
-            setupDetailsOverviewRowPresenter();
-            setupMovieListRow();
-            setupMovieListRowPresenter();
-            updateBackground(mSelectedMovie.getBackgroundImageUrl());
-            setOnItemViewClickedListener(new ItemViewClickedListener());
-        } else {
-            Intent intent = new Intent(getActivity(), MainActivity.class);
-            startActivity(intent);
-        }
+    private void initialize() {
+        //DataSource
+        MovieRepository movieRepositoryImpl = MovieRepositoryImpl.getRepository();
+        //Domain
+        MovieUseCase movieUseCase = MovieUseCaseImpl.getUseCase(movieRepositoryImpl, UIThread.getInstance());
+        //Presenter
+        mMovieDetailPresenter = new MovieDetailPresenter(movieUseCase);
+        mMovieDetailPresenter.setShowMovieView(this);
+        mMovieDetailPresenter.getMovie(mSelectedMovie.getId());
     }
 
     @Override
@@ -136,16 +140,16 @@ public class VideoDetailsFragment extends DetailsFragment {
         setAdapter(mAdapter);
     }
 
-    private void setupDetailsOverviewRow() {
-        Log.d(TAG, "doInBackground: " + mSelectedMovie.toString());
-        final DetailsOverviewRow row = new DetailsOverviewRow(mSelectedMovie);
+    private void setupDetailsOverviewRow(Movie movie) {
+        Log.d(TAG, "doInBackground: " + movie.toString());
+        final DetailsOverviewRow row = new DetailsOverviewRow(movie);
         row.setImageDrawable(getResources().getDrawable(R.drawable.default_background));
         int width = Utils.convertDpToPixel(getActivity()
                 .getApplicationContext(), DETAIL_THUMB_WIDTH);
         int height = Utils.convertDpToPixel(getActivity()
                 .getApplicationContext(), DETAIL_THUMB_HEIGHT);
         Glide.with(getActivity())
-                .load(mSelectedMovie.getCardImageUrl())
+                .load(movie.getCardImageUrl())
                 .centerCrop()
                 .error(R.drawable.default_background)
                 .into(new SimpleTarget<GlideDrawable>(width, height) {
@@ -169,7 +173,7 @@ public class VideoDetailsFragment extends DetailsFragment {
         mAdapter.add(row);
     }
 
-    private void setupDetailsOverviewRowPresenter() {
+    private void setupDetailsOverviewRowPresenter(final Movie movie) {
         // Set detail background and style.
         DetailsOverviewRowPresenter detailsPresenter =
                 new DetailsOverviewRowPresenter(new DetailsDescriptionPresenter());
@@ -185,7 +189,7 @@ public class VideoDetailsFragment extends DetailsFragment {
             public void onActionClicked(Action action) {
                 if (action.getId() == ACTION_WATCH_TRAILER) {
                     Intent intent = new Intent(getActivity(), PlaybackOverlayActivity.class);
-                    intent.putExtra(DetailsActivity.MOVIE, mSelectedMovie);
+                    intent.putExtra(DetailsActivity.MOVIE, movie);
                     startActivity(intent);
                 } else {
                     Toast.makeText(getActivity(), action.toString(), Toast.LENGTH_SHORT).show();
@@ -197,6 +201,7 @@ public class VideoDetailsFragment extends DetailsFragment {
 
     private void setupMovieListRow() {
         String subcategories[] = {getString(R.string.related_movies)};
+        MovieList.setupMovies();
         List<Movie> list = MovieList.list;
 
         Collections.shuffle(list);
@@ -213,6 +218,37 @@ public class VideoDetailsFragment extends DetailsFragment {
         mPresenterSelector.addClassPresenter(ListRow.class, new ListRowPresenter());
     }
 
+    @Override
+    public void showLoading() {
+
+    }
+
+    @Override
+    public void hideLoading() {
+
+    }
+
+    @Override
+    public void showNoResultCase() {
+
+    }
+
+    @Override
+    public void hideNoResultCase() {
+
+    }
+
+    @Override
+    public void showResult(Movie movie) {
+        setupAdapter();
+        setupDetailsOverviewRow(movie);
+        setupDetailsOverviewRowPresenter(movie);
+        setupMovieListRow();
+        setupMovieListRowPresenter();
+        updateBackground(movie.getBackgroundImageUrl());
+        setOnItemViewClickedListener(new ItemViewClickedListener());
+    }
+
     private final class ItemViewClickedListener implements OnItemViewClickedListener {
         @Override
         public void onItemClicked(Presenter.ViewHolder itemViewHolder, Object item,
@@ -222,7 +258,7 @@ public class VideoDetailsFragment extends DetailsFragment {
                 Movie movie = (Movie) item;
                 Log.d(TAG, "Item: " + item.toString());
                 Intent intent = new Intent(getActivity(), DetailsActivity.class);
-                intent.putExtra(getResources().getString(R.string.movie), mSelectedMovie);
+                intent.putExtra(getResources().getString(R.string.movie), movie);
                 intent.putExtra(getResources().getString(R.string.should_start), true);
                 startActivity(intent);
 

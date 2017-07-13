@@ -15,7 +15,7 @@ public interface MovieUseCase {
         void onError();
     }
 
-    void execute(String movieId,MovieUseCase.MovieUseCaseCallback callback);
+    void execute(long movieId,MovieUseCase.MovieUseCaseCallback callback);
 
     void setCallback(MovieUseCase.MovieUseCaseCallback callback);
     void removeCallback();

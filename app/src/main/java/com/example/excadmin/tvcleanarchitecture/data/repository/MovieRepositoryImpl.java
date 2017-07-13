@@ -10,9 +10,11 @@ import java.util.List;
  * Created by excadmin on 2017/07/11.
  */
 
-public class MovieRepositoryImpl implements MovieRepository{
+public class MovieRepositoryImpl implements MovieRepository {
 
     private static MovieRepositoryImpl sMovieRepository;
+
+    private List<Movie> list = null;
 
     public MovieRepositoryImpl() {
         //API initialize
@@ -25,9 +27,8 @@ public class MovieRepositoryImpl implements MovieRepository{
         return sMovieRepository;
     }
 
-    @Override
-    public void getMovieList(MovieRepositoryCallback movieRepositoryCallback) {
-        List<Movie> list = new ArrayList<Movie>();
+    private void setMovieList() {
+        list = new ArrayList<Movie>();
         String title[] = {
                 "Zeitgeist 2010_ Year in Review",
                 "Google Demo Slam_ 20ft Search",
@@ -75,9 +76,31 @@ public class MovieRepositoryImpl implements MovieRepository{
                 description, "Studio Three", videoUrl[3], cardImageUrl[3], bgImageUrl[3]));
         list.add(buildMovieInfo("category", title[4],
                 description, "Studio Four", videoUrl[4], cardImageUrl[4], bgImageUrl[4]));
+    }
+
+    @Override
+    public void getMovieList(MovieRepositoryCallback movieRepositoryCallback) {
+
+        if (list == null) {
+            this.setMovieList();
+        }
 
         movieRepositoryCallback.onMovieListLoaded(list);
         //Api call
+    }
+
+    @Override
+    public void getMovie(long id, MovieRepositoryCallback movieRepositoryCallback) {
+        if (list == null) {
+            this.setMovieList();
+        }
+        for (Movie movie : list) {
+            if (movie.getId() == id) {
+                movieRepositoryCallback.onMovieLoaded(movie);
+                return;
+            }
+        }
+        movieRepositoryCallback.onError();
     }
 
     @Override

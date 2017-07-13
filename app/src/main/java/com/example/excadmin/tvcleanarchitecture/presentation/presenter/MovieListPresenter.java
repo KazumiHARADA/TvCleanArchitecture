@@ -18,7 +18,7 @@ public class MovieListPresenter extends Presenter implements MovieListUseCase.Mo
         mMovieListUseCase = movieListUseCase;
     }
 
-    public void setShowUserListView(ShowMovieListView view){
+    public void setShowMovieListView(ShowMovieListView view){
         mShowMovieListView = view;
     }
 

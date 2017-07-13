@@ -102,7 +102,7 @@ public class MainFragment extends BrowseFragment implements MovieListPresenter.S
 
         //Presenter
         mMovieListPresenter = new MovieListPresenter(movieListUseCase);
-        mMovieListPresenter.setShowUserListView(this);
+        mMovieListPresenter.setShowMovieListView(this);
 
         mMovieListPresenter.getMovieList();
     }

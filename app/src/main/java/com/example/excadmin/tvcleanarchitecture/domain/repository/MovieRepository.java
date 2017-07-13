@@ -10,7 +10,7 @@ import java.util.List;
 
 public interface MovieRepository {
     void getMovieList(MovieRepositoryCallback movieRepositoryCallback);
-    void getMovie(String id);
+    void getMovie(long id, MovieRepositoryCallback movieRepositoryCallback);
     void putMovie(Movie movie);
     interface MovieRepositoryCallback {
         void onMovieListLoaded(List<Movie> list);
