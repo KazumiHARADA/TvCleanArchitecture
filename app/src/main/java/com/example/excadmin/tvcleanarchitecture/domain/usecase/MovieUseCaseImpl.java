@@ -63,6 +63,11 @@ public class MovieUseCaseImpl extends UseCase<Long> implements MovieUseCase,Movi
     }
 
     @Override
+    public void onCategoryListLoaded(String[] list) {
+
+    }
+
+    @Override
     public void onError() {
         mPostExecutionThread.post(new Runnable() {
             @Override

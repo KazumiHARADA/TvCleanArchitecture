@@ -7,36 +7,36 @@ import com.example.excadmin.tvcleanarchitecture.domain.repository.MovieRepositor
 import java.util.List;
 
 /**
- * Created by excadmin on 2017/07/11.
+ * Created by excadmin on 2017/07/14.
  */
 
-public class MovieListUseCaseImpl extends UseCase<Void> implements MovieListUseCase,MovieRepository.MovieRepositoryCallback {
+public class MovieCategoryUseCaseImpl extends UseCase<Void> implements MovieCategoryUseCase,MovieRepository.MovieRepositoryCallback {
 
-    private static MovieListUseCaseImpl sUseCase;
+    private static MovieCategoryUseCaseImpl sUseCase;
     private final MovieRepository mMovieRepository;
     private PostExecutionThread mPostExecutionThread;
-    private MovieListUseCaseCallback mCallback;
+    private MovieCategoryUseCaseCallback mCallback;
 
-    public static MovieListUseCaseImpl getUseCase(MovieRepository movieRepository,PostExecutionThread postExecutionThread) {
+    public static MovieCategoryUseCaseImpl getUseCase(MovieRepository movieRepository,PostExecutionThread postExecutionThread) {
         if (sUseCase == null) {
-            sUseCase = new MovieListUseCaseImpl(movieRepository,postExecutionThread);
+            sUseCase = new MovieCategoryUseCaseImpl(movieRepository,postExecutionThread);
         }
         return sUseCase;
     }
 
-    public MovieListUseCaseImpl(MovieRepository movieRepository, PostExecutionThread postExecutionThread){
+    public MovieCategoryUseCaseImpl(MovieRepository movieRepository, PostExecutionThread postExecutionThread){
         mMovieRepository = movieRepository;
         mPostExecutionThread = postExecutionThread;
     }
 
     @Override
-    public void execute(MovieListUseCaseCallback callback) {
+    public void execute(MovieCategoryUseCaseCallback callback) {
         mCallback = callback;
         this.start(null);
     }
 
     @Override
-    public void setCallback(MovieListUseCaseCallback callback) {
+    public void setCallback(MovieCategoryUseCaseCallback callback) {
         mCallback = callback;
     }
 
@@ -46,15 +46,8 @@ public class MovieListUseCaseImpl extends UseCase<Void> implements MovieListUseC
     }
 
     @Override
-    public void onMovieListLoaded(final List<Movie> list) {
-        mPostExecutionThread.post(new Runnable() {
-            @Override
-            public void run() {
-                if (mCallback != null) {
-                    mCallback.onMovieListLoaded(list);
-                }
-            }
-        });
+    public void onMovieListLoaded(List<Movie> list) {
+
     }
 
     @Override
@@ -63,8 +56,15 @@ public class MovieListUseCaseImpl extends UseCase<Void> implements MovieListUseC
     }
 
     @Override
-    public void onCategoryListLoaded(String[] list) {
-
+    public void onCategoryListLoaded(final String[] list) {
+        mPostExecutionThread.post(new Runnable() {
+            @Override
+            public void run() {
+                if (mCallback != null) {
+                    mCallback.onMovieCategoryLoaded(list);
+                }
+            }
+        });
     }
 
     @Override
@@ -81,6 +81,6 @@ public class MovieListUseCaseImpl extends UseCase<Void> implements MovieListUseC
 
     @Override
     protected void call(Void params) {
-        mMovieRepository.getMovieList(this);
+        mMovieRepository.getCategoryList(this);
     }
 }

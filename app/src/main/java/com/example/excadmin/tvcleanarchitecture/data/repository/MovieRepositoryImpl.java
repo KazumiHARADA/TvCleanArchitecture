@@ -27,6 +27,15 @@ public class MovieRepositoryImpl implements MovieRepository {
         return sMovieRepository;
     }
 
+    public static final String MOVIE_CATEGORY[] = {
+            "Category Zero",
+            "Category One",
+            "Category Two",
+            "Category Three",
+            "Category Four",
+            "Category Five",
+    };
+
     private void setMovieList() {
         list = new ArrayList<Movie>();
         String title[] = {
@@ -101,6 +110,11 @@ public class MovieRepositoryImpl implements MovieRepository {
             }
         }
         movieRepositoryCallback.onError();
+    }
+
+    @Override
+    public void getCategoryList(MovieRepositoryCallback movieRepositoryCallback) {
+        movieRepositoryCallback.onCategoryListLoaded(MOVIE_CATEGORY);
     }
 
     @Override

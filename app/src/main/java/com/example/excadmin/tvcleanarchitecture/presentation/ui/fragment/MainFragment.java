@@ -49,12 +49,13 @@ import com.bumptech.glide.request.target.SimpleTarget;
 import com.example.excadmin.tvcleanarchitecture.data.repository.MovieRepositoryImpl;
 import com.example.excadmin.tvcleanarchitecture.domain.executor.UIThread;
 import com.example.excadmin.tvcleanarchitecture.domain.repository.MovieRepository;
+import com.example.excadmin.tvcleanarchitecture.domain.usecase.MovieCategoryUseCase;
+import com.example.excadmin.tvcleanarchitecture.domain.usecase.MovieCategoryUseCaseImpl;
 import com.example.excadmin.tvcleanarchitecture.domain.usecase.MovieListUseCase;
 import com.example.excadmin.tvcleanarchitecture.domain.usecase.MovieListUseCaseImpl;
 import com.example.excadmin.tvcleanarchitecture.presentation.presenter.MovieListPresenter;
 import com.example.excadmin.tvcleanarchitecture.presentation.ui.activity.BrowseErrorActivity;
 import com.example.excadmin.tvcleanarchitecture.domain.model.Movie;
-import com.example.excadmin.tvcleanarchitecture.MovieList;
 import com.example.excadmin.tvcleanarchitecture.R;
 import com.example.excadmin.tvcleanarchitecture.presentation.ui.activity.DetailsActivity;
 import com.example.excadmin.tvcleanarchitecture.presentation.ui.adapter.CardPresenter;
@@ -99,9 +100,10 @@ public class MainFragment extends BrowseFragment implements MovieListPresenter.S
 
         //Domain
         MovieListUseCase movieListUseCase = MovieListUseCaseImpl.getUseCase(movieRepositoryImpl, UIThread.getInstance());
+        MovieCategoryUseCase movieCategoryUseCase = MovieCategoryUseCaseImpl.getUseCase(movieRepositoryImpl,UIThread.getInstance());
 
         //Presenter
-        mMovieListPresenter = new MovieListPresenter(movieListUseCase);
+        mMovieListPresenter = new MovieListPresenter(movieListUseCase,movieCategoryUseCase);
         mMovieListPresenter.setShowMovieListView(this);
 
         mMovieListPresenter.getMovieList();
@@ -201,7 +203,7 @@ public class MainFragment extends BrowseFragment implements MovieListPresenter.S
     }
 
     @Override
-    public void showResult(List<Movie> list) {
+    public void showResult(List<Movie> list,String[] category) {
 
         mRowsAdapter = new ArrayObjectAdapter(new ListRowPresenter());
         CardPresenter cardPresenter = new CardPresenter();
@@ -215,7 +217,7 @@ public class MainFragment extends BrowseFragment implements MovieListPresenter.S
             for (int j = 0; j < NUM_COLS; j++) {
                 listRowAdapter.add(list.get(j % 5));
             }
-            HeaderItem header = new HeaderItem(i, MovieList.MOVIE_CATEGORY[i]);
+            HeaderItem header = new HeaderItem(i,category[i]);
             mRowsAdapter.add(new ListRow(header, listRowAdapter));
         }
 

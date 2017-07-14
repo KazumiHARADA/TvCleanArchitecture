@@ -10,13 +10,15 @@ import java.util.List;
  * Created by excadmin on 2017/07/11.
  */
 
-public class MovieDetailPresenter extends Presenter implements MovieUseCase.MovieUseCaseCallback{
+public class MovieDetailPresenter extends Presenter implements MovieUseCase.MovieUseCaseCallback,MovieListUseCase.MovieListUseCaseCallback{
 
     private MovieUseCase mMovieUseCase;
+    private MovieListUseCase mMovieListUseCase;
     private MovieDetailPresenter.ShowMovieView mShowMovieView;
 
-    public MovieDetailPresenter(MovieUseCase movieUseCase){
+    public MovieDetailPresenter(MovieUseCase movieUseCase,MovieListUseCase movieListUseCase){
         mMovieUseCase = movieUseCase;
+        mMovieListUseCase = movieListUseCase;
     }
 
     public void setShowMovieView(MovieDetailPresenter.ShowMovieView view){
@@ -28,6 +30,13 @@ public class MovieDetailPresenter extends Presenter implements MovieUseCase.Movi
         mShowMovieView.hideLoading();
         mShowMovieView.hideNoResultCase();
         mShowMovieView.showResult(movie);
+    }
+
+    @Override
+    public void onMovieListLoaded(List<Movie> list) {
+        mShowMovieView.hideLoading();
+        mShowMovieView.hideNoResultCase();
+        mShowMovieView.showResultList(list);
     }
 
     @Override
@@ -61,11 +70,17 @@ public class MovieDetailPresenter extends Presenter implements MovieUseCase.Movi
         mMovieUseCase.execute(id,this);
     }
 
+    public void getMovieList() {
+        mShowMovieView.showLoading();
+        mMovieListUseCase.execute(this);
+    }
+
     public interface ShowMovieView {
         void showLoading();
         void hideLoading();
         void showNoResultCase();
         void hideNoResultCase();
         void showResult(Movie movie);
+        void showResultList(List<Movie> movie);
     }
 }
