@@ -53,11 +53,13 @@ public class MovieDetailPresenter extends Presenter implements MovieUseCase.Movi
     @Override
     public void resume() {
         mMovieUseCase.setCallback(this);
+        mMovieListUseCase.setCallback(this);
     }
 
     @Override
     public void pause() {
         mMovieUseCase.removeCallback();
+        mMovieListUseCase.removeCallback();
     }
 
     @Override

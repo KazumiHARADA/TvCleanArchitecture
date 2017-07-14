@@ -85,12 +85,25 @@ public class MainFragment extends BrowseFragment implements MovieListPresenter.S
         super.onActivityCreated(savedInstanceState);
 
         initialize();
+        mMovieListPresenter.initialize();
 
         prepareBackgroundManager();
 
         setupUIElements();
 
         setupEventListeners();
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        mMovieListPresenter.pause();
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        mMovieListPresenter.resume();
     }
 
     private void initialize() {
@@ -136,6 +149,7 @@ public class MainFragment extends BrowseFragment implements MovieListPresenter.S
     @Override
     public void onDestroy() {
         super.onDestroy();
+        mMovieListPresenter.destroy();
         if (null != mBackgroundTimer) {
             Log.d(TAG, "onDestroy: " + mBackgroundTimer.toString());
             mBackgroundTimer.cancel();
